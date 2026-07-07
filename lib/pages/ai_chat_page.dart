@@ -14,15 +14,24 @@ class _AiChatPageState extends State<AiChatPage> {
   final List<Map<String, String>> _messages = [];
   bool _isLoading = false;
   late final GenerativeModel _model;
+  
+  // เพิ่มตัวแปร ChatSession สำหรับเก็บประวัติการสนทนา (Chat History)
+  late ChatSession _chat; 
 
   @override
   void initState() {
     super.initState();
-    // เริ่มต้น Gemini Model
+    // เริ่มต้น Gemini Model พร้อมกำหนด System Prompt (กำหนดบุคลิก)
     _model = GenerativeModel(
-      model: 'gemini-2.5-flash',  // ใช้รุ่น 2.5 Flash ซึ่งเป็นรุ่นใหม่ที่ API Key ของคุณรองรับ
+      model: 'gemini-2.5-flash',
       apiKey: ApiConfig.geminiApiKey,
+      // กำหนดบุคลิกของ AI ด้วย systemInstruction
+      systemInstruction: Content.system(
+          'คุณคือ AI ผู้ช่วยนักพัฒนา Flutter ชื่อน้อง "ฟลัตตี้" (Flutty) ให้ตอบคำถามด้วยความกระตือรือร้น เป็นกันเอง ใช้ภาษาไทยที่เข้าใจง่าย และเชี่ยวชาญการเขียนโค้ด Flutter มากๆ (ใช้ Emoji ประกอบการตอบด้วยเสมอ)'),
     );
+    
+    // เริ่มต้น Chat Session เพื่อให้มันจำประวัติการคุยแทนการถามตอบแบบครั้งเดียวจบ
+    _chat = _model.startChat();
   }
 
   // ส่งข้อความไปยัง Gemini API
@@ -37,8 +46,8 @@ class _AiChatPageState extends State<AiChatPage> {
     _controller.clear();
 
     try {
-      final content = [Content.text(userMessage)];
-      final response = await _model.generateContent(content);
+      // ใช้ _chat.sendMessage แทน เพื่อให้ระบบจัดการและส่ง History ไปด้วยอัตโนมัติ
+      final response = await _chat.sendMessage(Content.text(userMessage));
       
       setState(() {
         _messages.add({
@@ -58,6 +67,14 @@ class _AiChatPageState extends State<AiChatPage> {
     }
   }
 
+  // ฟังก์ชันล้างแชท (Clear Chat)
+  void _clearChat() {
+    setState(() {
+      _messages.clear(); // ล้างหน้าจอข้อความเก่า
+      _chat = _model.startChat(); // รีเซ็ต Session ใหม่เพื่อลบความจำเดิมทั้งหมด
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,6 +82,14 @@ class _AiChatPageState extends State<AiChatPage> {
         title: const Text('Gemini AI Chat'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        actions: [
+          // ปุ่ม Clear Chat ตรงมุมขวาบน
+          IconButton(
+            icon: const Icon(Icons.delete_sweep),
+            tooltip: 'ล้างประวัติแชท',
+            onPressed: _clearChat,
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -73,7 +98,7 @@ class _AiChatPageState extends State<AiChatPage> {
             child: _messages.isEmpty
                 ? const Center(
                     child: Text(
-                      '👋 ทักทาย Gemini AI!\nลองพิมพ์ข้อความด้านล่าง',
+                      '👋 ทักทายน้อง ฟลัตตี้!\nผู้ช่วย Flutter ของคุณ\nลองพิมพ์ข้อความด้านล่าง',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.grey, fontSize: 16),
                     ),
