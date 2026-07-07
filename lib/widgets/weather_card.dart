@@ -1,102 +1,103 @@
 import 'package:flutter/material.dart';
 
-// สร้าง Enum สำหรับเลือกสภาพอากาศเพื่อให้โค้ดอ่านง่ายและจัดการ Type ได้ดี
-enum WeatherCondition { sunny, cloudy, rainy }
-
 class WeatherCard extends StatelessWidget {
-  final String cityName;
+  final String city;
   final double temperature;
-  final WeatherCondition condition;
+  final String condition;
   final int humidity;
 
-  // Constructor รับค่าผ่าน Parameters
   const WeatherCard({
     super.key,
-    required this.cityName,
+    required this.city,
     required this.temperature,
     required this.condition,
     required this.humidity,
   });
 
-  // Helper method สำหรับเลือก Icon ตามสภาพอากาศ
   IconData _getWeatherIcon() {
-    switch (condition) {
-      case WeatherCondition.sunny:
-        return Icons.wb_sunny_rounded;
-      case WeatherCondition.cloudy:
-        return Icons.cloud_rounded;
-      case WeatherCondition.rainy:
-        return Icons.umbrella_rounded;
-    }
-  }
-
-  // Helper method สำหรับเลือกสี Icon ให้เหมาะสม
-  Color _getIconColor() {
-    switch (condition) {
-      case WeatherCondition.sunny:
-        return Colors.orangeAccent;
-      case WeatherCondition.cloudy:
-        return Colors.blueGrey;
-      case WeatherCondition.rainy:
-        return Colors.blue;
+    switch (condition.toLowerCase()) {
+      case 'sunny':
+        return Icons.wb_sunny;
+      case 'cloudy':
+        return Icons.cloud;
+      case 'rainy':
+        return Icons.water_drop;
+      default:
+        return Icons.wb_cloudy_outlined;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      // Material Design 3: ใช้ Filled Card และการจัดเงาแบบใหม่
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      color: Theme.of(context).colorScheme.surfaceVariant, 
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
+      elevation: 8,
+      shadowColor: Colors.blue.withOpacity(0.3),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+      child: Container(
+        width: 300,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.blue.shade400, Colors.blue.shade800],
+          ),
+        ),
+        padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // ให้ Card ขยายขนาดตามเนื้อหาภายใน
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // 1. ชื่อเมือง
             Text(
-              cityName,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              city,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
             ),
-            const SizedBox(height: 16),
-
-            // 2. ไอคอนสภาพอากาศและอุณหภูมิ
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   _getWeatherIcon(),
+                  color: Colors.white,
                   size: 64,
-                  color: _getIconColor(),
                 ),
                 const SizedBox(width: 20),
                 Text(
                   '${temperature.toStringAsFixed(1)}°',
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 64,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-
-            // 3. ความชื้น
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.water_drop_outlined, 
-                     size: 18, 
-                     color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 4),
-                Text(
-                  'Humidity: $humidity%',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.water_drop, color: Colors.white, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Humidity $humidity%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

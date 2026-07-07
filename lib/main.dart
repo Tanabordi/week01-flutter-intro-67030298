@@ -110,9 +110,9 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 24),
             // ตัวอย่างการนำไปใช้งานในหน้าจอ (Usage Example)
             const WeatherCard(
-              cityName: 'Bangkok',
+              city: 'Bangkok',
               temperature: 32.5,
-              condition: WeatherCondition.sunny,
+              condition: 'sunny',
               humidity: 65,
             ),
           ],
