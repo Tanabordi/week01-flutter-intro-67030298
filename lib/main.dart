@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'widgets/weather_card.dart';
 import 'pages/ai_chat_page.dart';
+import 'config/api_config.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +15,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'My Profile',
-      // รองรับ ธีมสว่าง (Light Theme)
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.orange,
@@ -21,7 +22,6 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      // เพิ่มการรองรับ ธีมมืด (Dark Theme)
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.orange,
@@ -29,13 +29,12 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      themeMode: ThemeMode.system, // ดึงค่าการตั้งค่าจากระบบมือถือ (สว่าง/มืด)
+      themeMode: ThemeMode.system, 
       home: const ProfilePage(),
     );
   }
 }
 
-// เปลี่ยน ProfilePage เป็น StatefulWidget เพื่อให้รองรับ Animation และ State
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -44,8 +43,53 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // ตัวแปรเก็บสถานะว่าการ์ดถูกกดให้ขยายอยู่หรือไม่
   bool _isCardExpanded = false;
+  
+  // ตัวแปรสำหรับ Challenge 3
+  String? _aiIntro;
+  bool _isGeneratingIntro = false;
+
+  // ฟังก์ชันสำหรับให้ AI สร้างคำแนะนำตัว
+  Future<void> _generateIntro() async {
+    setState(() {
+      _isGeneratingIntro = true;
+      _aiIntro = null;
+    });
+
+    try {
+      final model = GenerativeModel(
+        model: 'gemini-2.5-flash',
+        apiKey: ApiConfig.geminiApiKey,
+      );
+
+      // สร้าง Prompt โดยดึงข้อมูล Profile ส่งไปให้ AI
+      final prompt = '''
+จงเขียนแนะนำตัวสั้นๆ ประมาณ 2-3 บรรทัด ให้น่าสนใจ ดูเป็นกันเอง และน่าตื่นเต้น จากข้อมูลของฉันต่อไปนี้:
+ชื่อ: นายธนบดี บุญภมร
+รหัสนักศึกษา: 67030298
+คณะ: ครุศาสตร์อุตสาหกรรมและเทคโนโลยี
+มหาวิทยาลัย: สถานบันเทคโนโลยีพระจอมเกล้าเจ้าคุณทหารลาดกระบัง
+วิชาที่ชอบ: Mobile Development
+เป้าหมาย: พัฒนาแอปให้ได้ 1 ตัว
+งานอดิเรก: เล่นเกมและดูการ์ตูน
+ความสามารถพิเศษ: เรียนรู้ไว และมีไฟในการเขียนโค้ด!
+''';
+
+      final response = await model.generateContent([Content.text(prompt)]);
+      
+      setState(() {
+        _aiIntro = response.text;
+      });
+    } catch (e) {
+      setState(() {
+        _aiIntro = 'เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI: $e';
+      });
+    } finally {
+      setState(() {
+        _isGeneratingIntro = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +107,6 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               const SizedBox(height: 20),
 
-              // รูปโปรไฟล์
               const CircleAvatar(
                 radius: 60,
                 backgroundColor: Colors.orange,
@@ -86,18 +129,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
               const SizedBox(height: 24),
 
-              // ใช้ GestureDetector เพื่อจับ Event การแตะที่การ์ด
               GestureDetector(
                 onTap: () {
                   setState(() {
-                    _isCardExpanded = !_isCardExpanded; // สลับสถานะเมื่อถูกกด
+                    _isCardExpanded = !_isCardExpanded;
                   });
                 },
-                // ใช้ AnimatedContainer แทน Card เพื่อให้มีการขยับแบบ Smooth
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
-                  // เมื่อกดขยาย จะลดขอบ margin ด้านข้างให้การ์ดดูกว้างขึ้น
                   margin: EdgeInsets.symmetric(horizontal: _isCardExpanded ? 0 : 16),
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
@@ -143,7 +183,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           'งานอดิเรก',
                           'เล่นเกมและดูการ์ตูน',
                         ),
-                        // ถ้าการ์ดขยายอยู่ ให้โชว์แถวพิเศษขึ้นมา (Animation)
                         if (_isCardExpanded) ...[
                           const Divider(),
                           _buildInfoRow(
@@ -160,38 +199,70 @@ class _ProfilePageState extends State<ProfilePage> {
 
               const SizedBox(height: 16),
 
-              // เพิ่มปุ่ม Social Media Links
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.facebook, color: Colors.blue),
                     iconSize: 32,
-                    onPressed: () {
-                      // เพิ่มโค้ดไปเปิด Facebook
-                    },
+                    onPressed: () {},
                   ),
                   const SizedBox(width: 16),
                   IconButton(
-                    icon: const Icon(Icons.code), // ใช้ไอคอน Code แทน Github
+                    icon: const Icon(Icons.code), 
                     iconSize: 32,
-                    onPressed: () {
-                      // เพิ่มโค้ดเปิด Github
-                    },
+                    onPressed: () {},
                   ),
                   const SizedBox(width: 16),
                   IconButton(
                     icon: const Icon(Icons.email, color: Colors.redAccent),
                     iconSize: 32,
-                    onPressed: () {
-                      // เพิ่มโค้ดเปิด Email
-                    },
+                    onPressed: () {},
                   ),
                 ],
               ),
 
               const SizedBox(height: 24),
-              // ตัวอย่างการนำไปใช้งานในหน้าจอ (Usage Example)
+
+              // --- ส่วนที่ทำ Challenge 3 ---
+              ElevatedButton.icon(
+                onPressed: _isGeneratingIntro ? null : _generateIntro,
+                icon: const Icon(Icons.auto_awesome),
+                label: const Text('ให้ AI ช่วยเขียนแนะนำตัว'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // แสดง Loading หรือ ข้อความที่ AI แต่งให้
+              if (_isGeneratingIntro)
+                const CircularProgressIndicator(color: Colors.orange)
+              else if (_aiIntro != null)
+                Card(
+                  color: Theme.of(context).brightness == Brightness.dark 
+                      ? Colors.orange.withOpacity(0.2) 
+                      : Colors.orange.shade50,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.orange.withOpacity(0.5)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      _aiIntro!,
+                      style: const TextStyle(fontSize: 16, height: 1.5),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              // --------------------------
+
+              const SizedBox(height: 24),
               const WeatherCard(
                 city: 'Bangkok',
                 temperature: 32.5,
@@ -217,13 +288,12 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Helper Method สร้างแถวข้อมูล
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.orange), // สีส้ม
+          Icon(icon, color: Colors.orange),
           const SizedBox(width: 12),
           Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
           Expanded(child: Text(value)),
