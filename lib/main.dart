@@ -13,8 +13,8 @@ class MyApp extends StatelessWidget {
       title: 'My Profile',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF241D4F),
-        ), // สีน้ำเงิน
+          seedColor: Colors.orange,
+        ), // สีส้ม
         useMaterial3: true,
       ),
       home: const ProfilePage(),
@@ -29,8 +29,8 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: const Color(0xFFED1C24), // สีแดง
+        title: const Text('โปรไฟล์ของฉัน'),
+        backgroundColor: Colors.orange, // สีส้ม
         foregroundColor: Colors.white, // สีขาว
       ),
       body: Padding(
@@ -43,7 +43,7 @@ class ProfilePage extends StatelessWidget {
             // รูปโปรไฟล์
             const CircleAvatar(
               radius: 60,
-              backgroundColor: Color(0xFF241D4F), // สีน้ำเงิน
+              backgroundColor: Colors.orange, // สีส้ม
               child: Icon(Icons.person, size: 60, color: Colors.white), // สีขาว
             ),
 
@@ -117,7 +117,7 @@ class ProfilePage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFFED1C24)), // สีแดง
+          Icon(icon, color: Colors.orange), // สีส้ม
           const SizedBox(width: 12),
           Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
           Expanded(child: Text(value)),
