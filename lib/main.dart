@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/weather_card.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,7 +34,8 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: Colors.orange, // สีส้ม
         foregroundColor: Colors.white, // สีขาว
       ),
-      body: Padding(
+      body: SingleChildScrollView(
+        child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -105,8 +107,17 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 24),
+            // ตัวอย่างการนำไปใช้งานในหน้าจอ (Usage Example)
+            const WeatherCard(
+              cityName: 'Bangkok',
+              temperature: 32.5,
+              condition: WeatherCondition.sunny,
+              humidity: 65,
+            ),
           ],
         ),
+      ),
       ),
     );
   }
