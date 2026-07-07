@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'widgets/weather_card.dart';
+import 'pages/ai_chat_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -114,6 +115,17 @@ class ProfilePage extends StatelessWidget {
               temperature: 32.5,
               condition: 'sunny',
               humidity: 65,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AiChatPage()),
+                );
+              },
+              icon: const Icon(Icons.smart_toy),
+              label: const Text('ทดลอง AI Chat'),
             ),
           ],
         ),
